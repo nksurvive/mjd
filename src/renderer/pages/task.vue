@@ -31,24 +31,33 @@
       ...mapGetters('user', ['accountList'])
     },
     methods: {
-      createOrders (sku, num) {
+      async createOrders (sku, num) {
         this.$Notice.open({
           name: 'task_start_notice',
-          title: '开抢~'
+          title: '开抢'
         })
+
         for (let i = 0; i < this.accountList.length; i++) {
+          const buyInfo = await api.jd.getBuyInfo(this.accountList[i].cookie, sku, num)
           let task = setInterval(() => {
-            this.createOrder(this.accountList[i].cookie, sku, num, this.accountList[i].pinId, this.accountList[i].name)
-          }, 1000)
+            let dateNow = new Date()
+            let startTime = new Date(dateNow.toLocaleDateString() + ' 10:00:00')
+            let diff = Math.abs(dateNow - startTime)
+            if (diff < 2000) {
+              this.createOrder(buyInfo, this.accountList[i].cookie, sku, num, this.accountList[i].pinId, this.accountList[i].name)
+            } else {
+              this.$Message.warning('距离'+startTime.toString()+"差" + diff.toString() + 'ms')
+            }
+          }, 500)
           this.timers.push({
             pinId: this.accountList[i].pinId,
             task
           })
         }
       },
-      async createOrder (cookie, sku, num, pinId, name) {
+      async createOrder (buyInfo, cookie, sku, num, pinId, name) {
         try {
-          const buyInfo = await api.jd.getBuyInfo(cookie, sku, num)
+          // const buyInfo = await api.jd.getBuyInfo(cookie, sku, num)
           const submitResult = await api.jd.orderSubmit(cookie, sku, num, buyInfo)
           if (submitResult && submitResult.success) {
             this.stopTask(pinId)
@@ -63,7 +72,7 @@
             this.$Message.info('抢购失败，还未到时间')
           }
         } catch (e) {
-          window.alert(e.message)
+          // this.$Message.warning(e.message)
         } finally {
           this.$Notice.close('task_start_notice')
         }
@@ -87,3 +96,4 @@
     }
   }
 </script>
+
