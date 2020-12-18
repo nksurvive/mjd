@@ -2,10 +2,21 @@
   <div class="task-page">
     <List border>
       <ListItem style="background-color: #ffffff;">
-        <ListItemMeta avatar="http://img13.360buyimg.com/n5/jfs/t1/97097/12/15694/245806/5e7373e6Ec4d1b0ac/9d8c13728cc2544d.jpg" title="飞天" description="每天10:30预约，次日10:00抢购" />
+        <ListItemMeta avatar="http://img13.360buyimg.com/n5/jfs/t1/97097/12/15694/245806/5e7373e6Ec4d1b0ac/9d8c13728cc2544d.jpg" title="飞天" description="每天10:30预>约，次日10:00抢购  100012043978" />
         <template slot="action">
           <li>
-            <a href="#" @click="createOrders(100012043978, 2)">开抢</a>
+            <a href="#" @click="createOrders(100012043978, 2, 10,'飞天')">开抢</a>
+          </li>
+          <li>
+            <a href="#" @click="stopAll">停止</a>
+          </li>
+        </template>
+      </ListItem>
+      <ListItem style="background-color: #ffffff;">
+        <ListItemMeta avatar="http://img13.360buyimg.com/n5/jfs/t1/97097/12/15694/245806/5e7373e6Ec4d1b0ac/9d8c13728cc2544d.jpg" title="圣诞树" description="每天10:30预>约，次日14:00抢购  " />
+        <template slot="action">
+          <li>
+            <a href="#" @click="createOrders(10024781827905, 1, 14,'圣诞树')">开抢</a>
           </li>
           <li>
             <a href="#" @click="stopAll">停止</a>
@@ -31,7 +42,7 @@
       ...mapGetters('user', ['accountList'])
     },
     methods: {
-      async createOrders (sku, num) {
+      async createOrders (sku, num, hour, title) {
         this.$Notice.open({
           name: 'task_start_notice',
           title: '开抢'
@@ -41,12 +52,12 @@
           const buyInfo = await api.jd.getBuyInfo(this.accountList[i].cookie, sku, num)
           let task = setInterval(() => {
             let dateNow = new Date()
-            let startTime = new Date(dateNow.toLocaleDateString() + ' 10:00:00')
+            let startTime = new Date(dateNow.toLocaleDateString() + ' ' + hour + ':00:00')
             let diff = Math.abs(dateNow - startTime)
-            if (diff < 2000) {
+            if (diff < 1000) {
               this.createOrder(buyInfo, this.accountList[i].cookie, sku, num, this.accountList[i].pinId, this.accountList[i].name)
             } else {
-              this.$Message.warning('距离'+startTime.toString()+"差" + diff.toString() + 'ms')
+              this.$Message.warning(title + '距离' + hour + ':00差' + diff.toString() + 'ms')
             }
           }, 500)
           this.timers.push({
