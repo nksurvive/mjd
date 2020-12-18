@@ -16,7 +16,7 @@
         <ListItemMeta avatar="http://img13.360buyimg.com/n5/jfs/t1/97097/12/15694/245806/5e7373e6Ec4d1b0ac/9d8c13728cc2544d.jpg" title="圣诞树" description="每天10:30预>约，次日14:00抢购  " />
         <template slot="action">
           <li>
-            <a href="#" @click="createOrders(10024781827905, 1, 14,'圣诞树')">开抢</a>
+            <a href="#" @click="createOrders(10024781880973, 1, 16,'圣诞树')">开抢</a>
           </li>
           <li>
             <a href="#" @click="stopAll">停止</a>
@@ -49,13 +49,12 @@
         })
 
         for (let i = 0; i < this.accountList.length; i++) {
-          const buyInfo = await api.jd.getBuyInfo(this.accountList[i].cookie, sku, num)
           let task = setInterval(() => {
             let dateNow = new Date()
             let startTime = new Date(dateNow.toLocaleDateString() + ' ' + hour + ':00:00')
             let diff = Math.abs(dateNow - startTime)
-            if (diff < 1000) {
-              this.createOrder(buyInfo, this.accountList[i].cookie, sku, num, this.accountList[i].pinId, this.accountList[i].name)
+            if (diff < 2000) {
+              this.createOrder(this.accountList[i].cookie, sku, num, this.accountList[i].pinId, this.accountList[i].name)
             } else {
               this.$Message.warning(title + '距离' + hour + ':00差' + diff.toString() + 'ms')
             }
@@ -66,9 +65,10 @@
           })
         }
       },
-      async createOrder (buyInfo, cookie, sku, num, pinId, name) {
+      async createOrder (cookie, sku, num, pinId, name) {
         try {
-          // const buyInfo = await api.jd.getBuyInfo(cookie, sku, num)
+          const buyInfo = await api.jd.getBuyInfo(cookie, sku, num)
+          console.log(buyInfo)
           const submitResult = await api.jd.orderSubmit(cookie, sku, num, buyInfo)
           if (submitResult && submitResult.success) {
             this.stopTask(pinId)
@@ -83,7 +83,7 @@
             this.$Message.info('抢购失败，还未到时间')
           }
         } catch (e) {
-          // this.$Message.warning(e.message)
+          this.$Message.warning(e.message)
         } finally {
           this.$Notice.close('task_start_notice')
         }
