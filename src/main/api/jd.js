@@ -4,7 +4,7 @@
  */
 import http from './http'
 
-const UserAgent = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/79.0.3945.88 Safari/537.36'
+const UserAgent = 'Darwin/20.1.0 Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/79.0.3945.88 Safari/537.36'
 const ContentType = 'application/x-www-form-urlencoded'
 /**
  * 查询登录状态及是否为京东plus会员
@@ -76,8 +76,8 @@ async function getBuyInfo (Cookie, sku, num) {
 }
 
 async function orderSubmit (Cookie, skuId, num, buyInfo) {
-  const { data } = await http.post('https://marathon.jd.com/seckillnew/orderService/pc/submitOrder.action', {
-    skuId,
+  let params = {
+    // skuId,
     num,
     'addressId': buyInfo['addressList'][0]['id'],
     'yuShou': true,
@@ -92,13 +92,6 @@ async function orderSubmit (Cookie, skuId, num, buyInfo) {
     'mobileKey': buyInfo['addressList'][0]['mobileKey'],
     'email': buyInfo['addressList'][0]['email'],
     'postCode': buyInfo['addressList'][0]['postCode'],
-    // 'invoiceTitle': buyInfo['invoiceInfo']['invoiceTitle'],
-    // "invoiceCompanyName":buyInfo["invoiceInfo"]["invoiceCompany"],
-    // 'invoiceContent': buyInfo['invoiceInfo']['invoiceContentType'],
-    // "invoiceTaxpayerNO":buyInfo["invoiceInfo"]["invoiceCode"],
-    // 'invoiceEmail': buyInfo['invoiceInfo']['invoiceEmail'],
-    // 'invoicePhone': buyInfo['invoiceInfo']['invoicePhone'],
-    // 'invoicePhoneKey': buyInfo['invoiceInfo']['invoicePhoneKey'],
     'invoice': false,
     'password': '',
     'codTimeType': 3,
@@ -110,7 +103,20 @@ async function orderSubmit (Cookie, skuId, num, buyInfo) {
     'fp': '',
     'token': buyInfo['token'],
     'pru': ''
-  }, {
+  }
+
+  if (buyInfo['invoiceInfo']) {
+    params['invoiceTitle'] = buyInfo['invoiceInfo']['invoiceTitle']
+    params['invoiceCompanyName'] = ''
+    params['invoiceContent'] = buyInfo['invoiceInfo']['invoiceContentType']
+    params['invoiceTaxpayerNO'] = ''
+    params['invoiceEmail'] = ''
+    params['invoicePhone'] = buyInfo['invoiceInfo']['invoicePhone']
+    params['invoicePhoneKey'] = buyInfo['invoiceInfo']['invoicePhoneKey']
+    params['invoice'] = true
+  }
+  console.log('https://marathon.jd.com/seckillnew/orderService/pc/submitOrder.action?skuId=' + skuId)
+  const { data } = await http.post('https://marathon.jd.com/seckillnew/orderService/pc/submitOrder.action?skuId=' + skuId, params, {
     headers: {
       Cookie,
       'User-Agent': UserAgent,
